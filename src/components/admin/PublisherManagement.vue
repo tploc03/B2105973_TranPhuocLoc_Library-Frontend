@@ -18,32 +18,34 @@
 
     <!-- Danh sách nhà xuất bản -->
     <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Mã NXB</th>
-            <th>Tên NXB</th>
-            <th>Địa chỉ</th>
-            <th>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="publisher in publishers" :key="publisher._id">
-            <td>{{ publisher.maNXB }}</td>
-            <td>{{ publisher.tenNXB }}</td>
-            <td>{{ publisher.diaChi }}</td>
-            <td>
-              <button class="btn btn-sm btn-info me-2" @click="editPublisher(publisher)">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="btn btn-sm btn-danger" @click="deletePublisher(publisher._id)">
-                <i class="fas fa-trash"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Mã NXB</th>
+              <th>Tên NXB</th>
+              <th>Địa chỉ</th>
+              <th>Số sách đã xuất bản</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="publisher in publishers" :key="publisher._id">
+              <td>{{ publisher.maNXB }}</td>
+              <td>{{ publisher.tenNXB }}</td>
+              <td>{{ publisher.diaChi }}</td>
+              <td>{{ getPublisherBookCount(publisher._id) }}</td>
+              <td>
+                <button class="btn btn-sm btn-info me-2" @click="editPublisher(publisher)">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" @click="deletePublisher(publisher._id)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
     <!-- Modal thêm/sửa nhà xuất bản -->
     <div class="modal" tabindex="-1" :class="{ 'd-block': showAddModal }">
@@ -153,7 +155,22 @@ export default {
       };
       errors.value = {};
     };
+    const allBooks = computed(() => store.getters['book/allBooks']);
 
+    const getPublisherBookCount = (publisherId) => {
+      return allBooks.value.filter(book => book.maNXB?._id === publisherId).length;
+    };
+
+    const fetchData = async () => {
+      try {
+        await Promise.all([
+          store.dispatch('publisher/fetchPublishers'),
+          store.dispatch('book/fetchBooks')
+        ]);
+      } catch (error) {
+        showError(error);
+      }
+    };
     const editPublisher = (publisher) => {
       editingPublisher.value = publisher;
       publisherForm.value = { ...publisher };
@@ -209,6 +226,7 @@ export default {
       publisherForm,
       errors,
       closeModal,
+      getPublisherBookCount,
       editPublisher,
       handleSubmit,
       deletePublisher,

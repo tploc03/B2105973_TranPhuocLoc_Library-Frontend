@@ -46,29 +46,34 @@
             <th>Thao tác</th>
           </tr>
         </thead>
-  <tbody>
-    <tr v-for="request in filteredRequests" :key="request._id">
-      <td>
-        {{ request.maDocGia?.hoLot || 'N/A' }} {{ request.maDocGia?.ten || '' }}
-        <br>
-        <small class="text-muted">{{ request.maDocGia?.maDocGia || 'N/A' }}</small>
-      </td>
-      <td>
-        {{ request.maSach?.tenSach || 'N/A' }}
-        <br>
-        <small class="text-muted">{{ request.maSach?.maSach || 'N/A' }}</small>
-      </td>
-      <td>{{ formatDate(request.ngayMuon) }}</td>
-      <td>{{ request.ngayTra ? formatDate(request.ngayTra) : '-' }}</td>
-      <td>
-        <span :class="getStatusBadgeClass(request.trangThai)">
-          {{ request.trangThai }}
-        </span>
-      </td>
+        <tbody>
+          <tr v-for="request in filteredRequests" :key="request._id">
+            <td>
+              {{ request.maDocGia?.hoLot || 'N/A' }} {{ request.maDocGia?.ten || '' }}
+              <br>
+              <small class="text-muted">{{ request.maDocGia?.maDocGia || 'N/A' }}</small>
+            </td>
+            <td>
+              {{ request.maSach?.tenSach || 'N/A' }}
+              <br>
+              <small class="text-muted">{{ request.maSach?.maSach || 'N/A' }}</small>
+              <br>
+              <small :class="getQuantityClass(request.maSach?.soQuyen)">
+                Còn lại: {{ request.maSach?.soQuyen || 0 }} quyển
+              </small>
+            </td>
+            <td>{{ formatDate(request.ngayMuon) }}</td>
+            <td>{{ request.ngayTra ? formatDate(request.ngayTra) : '-' }}</td>
+            <td>
+              <span :class="getStatusBadgeClass(request.trangThai)">
+                {{ request.trangThai }}
+              </span>
+            </td>
             <td>
               <template v-if="request.trangThai === 'Chờ duyệt'">
                 <button class="btn btn-sm btn-success me-2" 
-                        @click="showConfirmAction('approve', request)">
+                        @click="showConfirmAction('approve', request)"
+                        :disabled="request.maSach?.soQuyen <= 0">
                   <i class="fas fa-check"></i> Duyệt
                 </button>
                 <button class="btn btn-sm btn-danger" 
@@ -91,7 +96,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, getCurrentInstance} from 'vue';
 import { useStore } from 'vuex';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { showError, showConfirm } from '@/utils/notifications';
@@ -103,7 +108,7 @@ export default {
     const store = useStore();
     const currentTab = ref('pending');
     const loading = ref(false);
-
+    const { proxy } = getCurrentInstance();
     const borrowRequests = computed(() => store.getters['borrow/allBorrowRequests']);
     
     const filteredRequests = computed(() => {
@@ -117,7 +122,7 @@ export default {
         request => request.trangThai === statusMap[currentTab.value]
       );
     });
-
+    
     const formatDate = (date) => {
       return new Date(date).toLocaleDateString('vi-VN');
     };
@@ -143,6 +148,12 @@ export default {
       }
     };
 
+    const getQuantityClass = (quantity) => {
+      if (quantity <= 0) return 'text-danger fw-bold';
+      if (quantity < 3) return 'text-warning fw-bold';
+      return 'text-success';
+    };
+
     const showConfirmAction = async (action, request) => {
       const messages = {
         approve: 'Bạn có chắc chắn muốn duyệt yêu cầu mượn sách này?',
@@ -165,9 +176,10 @@ export default {
       loading.value = true;
       try {
         await store.dispatch('borrow/updateBorrowStatus', { id, status });
+        proxy.$toast.show('Cập nhật trạng thái thành công', 'success');
         await fetchBorrowRequests();
       } catch (error) {
-        showError(error);
+        proxy.$toast.show(error.response?.data?.message || 'Có lỗi xảy ra', 'danger');
       } finally {
         loading.value = false;
       }
@@ -180,8 +192,10 @@ export default {
       filteredRequests,
       loading,
       formatDate,
+      getQuantityClass,
       getStatusBadgeClass,
-      showConfirmAction
+      showConfirmAction,
+      updateStatus
     };
   }
 };
@@ -193,5 +207,14 @@ export default {
 }
 .badge {
   font-size: 0.9em;
+}
+.text-danger {
+  color: #dc3545 !important;
+}
+.text-warning {
+  color: #ffc107 !important;
+}
+.text-success {
+  color: #198754 !important;
 }
 </style>

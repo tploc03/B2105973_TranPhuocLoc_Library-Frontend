@@ -24,7 +24,7 @@
             type="text" 
             class="form-control" 
             v-model="searchTerm"
-            placeholder="Tìm kiếm sách..."
+            placeholder="Tìm kiếm sách (theo tên sách, mã sách, tên nhà xuất bản)..."
           >
           <button class="btn btn-outline-secondary" type="button" @click="searchBooks">
             <i class="fas fa-search"></i>
@@ -54,7 +54,13 @@
             <td>{{ book.tenSach }}</td>
             <td>{{ book.maNXB?.tenNXB }}</td>
             <td>{{ formatCurrency(book.donGia) }}</td>
-            <td>{{ book.soQuyen }}</td>
+            <td :class="getQuantityClass(book.soQuyen)">
+              {{ book.soQuyen }}
+              <br>
+              <small v-if="book.soQuyen <= 3" class="text-muted">
+                {{ getQuantityMessage(book.soQuyen) }}
+              </small>
+            </td>
             <td>{{ book.namXuatBan }}</td>
             <td>{{ book.nguonGoc }}</td>
             <td>
@@ -294,6 +300,18 @@ export default {
       };
     };
 
+    const getQuantityClass = (quantity) => {
+      if (quantity === 0) return 'text-danger fw-bold';
+      if (quantity < 3) return 'text-warning fw-bold';
+      return 'text-success';
+    };
+
+    const getQuantityMessage = (quantity) => {
+      if (quantity === 0) return 'Hết sách';
+      if (quantity < 3) return 'Sắp hết sách';
+      return '';
+    };
+
     const editBook = (book) => {
       editingBook.value = book;
       bookForm.value = { ...book };
@@ -360,6 +378,8 @@ export default {
       selectedBook,
       bookForm,
       loading,
+      getQuantityClass,
+      getQuantityMessage,
       error,
       errors,
       books,
@@ -387,5 +407,19 @@ export default {
 }
 .text-danger {
   font-weight: bold;
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.text-warning {
+  background-color: rgba(255, 193, 7, 0.1);
+}
+
+.text-success {
+  color: #198754 !important;
+}
+
+.text-muted {
+  font-size: 0.85em;
+  font-style: italic;
 }
 </style>

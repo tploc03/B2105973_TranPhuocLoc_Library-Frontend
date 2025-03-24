@@ -171,16 +171,18 @@ export default {
   margin-right: 8px;
 }
 .footer {
-  padding: 20px 0 20px;
+  padding: 15px 0;
   color: #6c757d;
   background-color: rgba(255, 255, 255, 0.95);
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
 }
 
 .footer h5 {
   color: #0d6efd;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
 }
 
 .footer ul li {
@@ -199,9 +201,9 @@ export default {
 
 .social-links a {
   display: inline-block;
-  width: 35px;
-  height: 35px;
-  line-height: 35px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
   text-align: center;
   border-radius: 50%;
   background-color: #0d6efd;
@@ -215,11 +217,20 @@ export default {
 }
 
 .footer hr {
-  margin: 30px 0;
+  margin: 20px 0;
   border-color: rgba(108, 117, 125, 0.2);
 }
 
 .footer i {
-  width: 20px;
+  width: 16px;
+}
+
+.footer .row > [class*='col-'] {
+  padding-top: 0;
+  padding-bottom: 10px;
+}
+
+.footer .mb-4 {
+  margin-bottom: 1rem !important;
 }
 </style>
