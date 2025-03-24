@@ -3,7 +3,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container">
         <a class="navbar-brand" href="#" @click.prevent="currentComponent = 'HomePage'">
-          <i class="fas fa-book-reader me-2"></i>Thư viện
+          <i class="fas fa-book-reader me-2"></i>Thư viện PL
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span class="navbar-toggler-icon"></span>

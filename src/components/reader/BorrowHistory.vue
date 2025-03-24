@@ -33,7 +33,7 @@
       <li class="nav-item">
         <a class="nav-link" :class="{ active: currentTab === 'rejected' }" 
            @click="currentTab = 'rejected'">
-          Đã từ chối
+          Bị từ chối
         </a>
       </li>
       <li class="nav-item">

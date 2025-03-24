@@ -4,10 +4,10 @@
 
     <h2>Danh sách sách</h2>
 
-    <!-- <div v-if="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div v-if="error" class="alert alert-danger alert-dismissible fade show" role="alert">
       {{ error }}
       <button type="button" class="btn-close" @click="clearError"></button>
-    </div> -->
+    </div>
 
     <!-- Confirmation Modal -->
     <div class="modal" tabindex="-1" :class="{ 'd-block': showConfirmModal }">
@@ -50,40 +50,43 @@
 
     <!-- Danh sách sách -->
     <div class="row row-cols-1 row-cols-md-3 g-4">
-      <div class="col" v-for="book in books" :key="book._id">
-        <div class="card h-100">
-          <div class="card-body">
-            <h5 class="card-title">{{ book.tenSach }}</h5>
-            <p class="card-text">
-              <small class="text-muted">Mã sách: {{ book.maSach }}</small>
-            </p>
-            <p class="card-text">
-              <strong>Nhà xuất bản:</strong> {{ book.maNXB?.tenNXB }}
-            </p>
-            <p class="card-text">
-              <strong>Năm xuất bản:</strong> {{ book.namXuatBan }}
-            </p>
-            <p class="card-text">
-              <strong>Số quyển còn:</strong> {{ book.soQuyen }}
-            </p>
-          </div>
-          <div class="card-footer">
-            <button 
-              class="btn btn-primary"
-              @click="borrowBook(book._id)"
-              :disabled="book.soQuyen === 0 || loading"
-            >
-              {{ loading ? 'Đang xử lý...' : 'Mượn sách' }}
-            </button>
-          </div>
+    <div class="col" v-for="book in books" :key="book._id">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ book.tenSach }}</h5>
+          <p class="card-text">
+            <small class="text-muted">Mã sách: {{ book.maSach }}</small>
+          </p>
+          <p class="card-text">
+            <strong>Nhà xuất bản:</strong> {{ book.maNXB?.tenNXB }}
+          </p>
+          <p class="card-text">
+            <strong>Năm xuất bản:</strong> {{ book.namXuatBan }}
+          </p>
+          <p class="card-text">
+            <strong>Nguốc gốc/Tác giả:</strong> {{ book.nguonGoc }}
+          </p>
+          <p class="card-text">
+            <strong>Số quyển còn:</strong> {{ book.soQuyen }}
+          </p>
+        </div>
+        <div class="card-footer">
+          <button 
+            class="btn btn-primary"
+            @click="borrowBook(book._id)"
+            :disabled="book.soQuyen === 0 || loading"
+          >
+            {{ loading ? 'Đang xử lý...' : 'Mượn sách' }}
+          </button>
         </div>
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <script>
-import { ref, onMounted, getCurrentInstance } from 'vue';
+import { ref, onMounted, computed, getCurrentInstance } from 'vue';
 import { useStore } from 'vuex';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import {showSuccess, showError } from '@/utils/notifications';
@@ -95,6 +98,7 @@ export default {
     const store = useStore();
     const books = ref([]);
     const { proxy } = getCurrentInstance();
+    const error = ref(null);
     const loading = ref(false);
     const searchTerm = ref('');
     const showConfirmModal = ref(false);
@@ -102,10 +106,14 @@ export default {
 
     const fetchBooks = async () => {
       try {
+        loading.value = true;
         await store.dispatch('book/fetchBooks');
         books.value = store.getters['book/allBooks'];
-      } catch (error) {
-        console.error('Error fetching books:', error);
+      } catch (err) {
+        error.value = err.message;
+        console.error('Error fetching books:', err);
+      } finally {
+        loading.value = false;
       }
     };
 
@@ -141,11 +149,14 @@ export default {
       
       books.value = store.getters['book/allBooks'].filter(book => 
         book.tenSach.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-        book.maSach.toLowerCase().includes(searchTerm.value.toLowerCase())
+        book.maSach.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+        book.maNXB?.tenNXB.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+        book.nguonGoc.toLowerCase().includes(searchTerm.value.toLowerCase())
       );
     };
 
     const clearError = () => {
+      error.value = null;
       store.commit('book/SET_ERROR', null);
     };
 
@@ -154,6 +165,7 @@ export default {
     return {
       books,
       loading,
+      error,
       searchTerm,
       borrowBook,
       searchBooks,

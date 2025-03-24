@@ -47,7 +47,7 @@
                       <i class="fas fa-search"></i> Tìm sách
                     </h5>
                     <p class="card-text">
-                      Dễ dàng tìm kiếm sách theo tên, tác giả hoặc nhà xuất bản
+                      Dễ dàng tìm kiếm sách theo tên sách, mã sách, tên NXB, tên tác giả
                     </p>
                   </div>
                 </div>
