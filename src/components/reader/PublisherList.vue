@@ -28,24 +28,69 @@
     </div>
 
     <!-- Danh sách nhà xuất bản -->
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Mã NXB</th>
-            <th>Tên NXB</th>
-            <th>Địa chỉ</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="publisher in publishers" :key="publisher._id">
-            <td>{{ publisher.maNXB }}</td>
-            <td>{{ publisher.tenNXB }}</td>
-            <td>{{ publisher.diaChi }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <div class="col" v-for="publisher in publishers" :key="publisher._id">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ publisher.tenNXB }}</h5>
+            <p class="card-text">
+              <small class="text-muted">Mã NXB: {{ publisher.maNXB }}</small>
+            </p>
+            <p class="card-text">
+              <strong>Địa chỉ:</strong> {{ publisher.diaChi }}
+            </p>
+            <p class="card-text">
+              <strong>Số sách đã xuất bản:</strong> {{ getPublisherBookCount(publisher._id) }}
+            </p>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-primary" @click="showPublisherBooks(publisher)">
+              Xem danh sách sách
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Modal xem sách của nhà xuất bản -->
+    <div class="modal" tabindex="-1" :class="{ 'd-block': showBooksModal }">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Sách của {{ selectedPublisher?.tenNXB }}</h5>
+            <button type="button" class="btn-close" @click="closeBooksModal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Mã sách</th>
+                    <th>Tên sách</th>
+                    <th>Năm xuất bản</th>
+                    <th>Số quyển</th>
+                    <th>Đơn giá</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="book in publisherBooks" :key="book._id">
+                    <td>{{ book.maSach }}</td>
+                    <td>{{ book.tenSach }}</td>
+                    <td>{{ book.namXuatBan }}</td>
+                    <td>{{ book.soQuyen }}</td>
+                    <td>{{ formatCurrency(book.donGia) }}</td>
+                  </tr>
+                  <tr v-if="publisherBooks.length === 0">
+                    <td colspan="5" class="text-center">Không có sách nào</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade show" v-if="showBooksModal"></div>
   </div>
 </template>
 
@@ -61,9 +106,13 @@ export default {
   setup() {
     const store = useStore();
     const searchTerm = ref('');
+    const showBooksModal = ref(false);
+    const selectedPublisher = ref(null);
+
     const loading = computed(() => store.getters['publisher/isLoading']);
     const error = computed(() => store.getters['publisher/error']);
     const allPublishers = computed(() => store.getters['publisher/allPublishers']);
+    const allBooks = computed(() => store.getters['book/allBooks']);
 
     const publishers = computed(() => {
       if (!searchTerm.value) return allPublishers.value;
@@ -74,8 +123,36 @@ export default {
       );
     });
 
+    const publisherBooks = computed(() => {
+      if (!selectedPublisher.value) return [];
+      return allBooks.value.filter(book => 
+        book.maNXB?._id === selectedPublisher.value._id
+      );
+    });
+
+    const getPublisherBookCount = (publisherId) => {
+      return allBooks.value.filter(book => book.maNXB?._id === publisherId).length;
+    };
+
+    const formatCurrency = (value) => {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+      }).format(value);
+    };
+
     const handleSearch = () => {
       // Filtering is handled by computed property
+    };
+
+    const showPublisherBooks = (publisher) => {
+      selectedPublisher.value = publisher;
+      showBooksModal.value = true;
+    };
+
+    const closeBooksModal = () => {
+      showBooksModal.value = false;
+      selectedPublisher.value = null;
     };
 
     const clearError = () => {
@@ -84,7 +161,10 @@ export default {
 
     onMounted(async () => {
       try {
-        await store.dispatch('publisher/fetchPublishers');
+        await Promise.all([
+          store.dispatch('publisher/fetchPublishers'),
+          store.dispatch('book/fetchBooks')
+        ]);
       } catch (error) {
         showError(error);
       }
@@ -95,18 +175,34 @@ export default {
       loading,
       error,
       searchTerm,
+      showBooksModal,
+      selectedPublisher,
+      publisherBooks,
       handleSearch,
-      clearError
+      clearError,
+      showPublisherBooks,
+      closeBooksModal,
+      getPublisherBookCount,
+      formatCurrency
     };
   }
 };
 </script>
 
 <style scoped>
-.table {
-  margin-top: 1rem;
+.card {
+  transition: transform 0.2s;
 }
-.search-box {
-  max-width: 300px;
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.table {
+  margin-bottom: 0;
 }
 </style>
