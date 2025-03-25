@@ -16,6 +16,22 @@
       <button type="button" class="btn-close" @click="clearError"></button>
     </div>
 
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="input-group">
+          <input 
+            type="text" 
+            class="form-control" 
+            v-model="searchTerm"
+            placeholder="Tìm kiếm theo mã NXB hoặc tên NXB..."
+          >
+          <span class="input-group-text">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- Danh sách nhà xuất bản -->
     <div class="table-responsive">
         <table class="table table-striped">
@@ -130,6 +146,7 @@ export default {
     const store = useStore();
     const showAddModal = ref(false);
     const editingPublisher = ref(null);
+    const searchTerm = ref('');
     const publisherForm = ref({
       maNXB: '',
       tenNXB: '',
@@ -160,6 +177,16 @@ export default {
     const getPublisherBookCount = (publisherId) => {
       return allBooks.value.filter(book => book.maNXB?._id === publisherId).length;
     };
+
+    const filteredPublishers = computed(() => {
+      if (!searchTerm.value) return publishers.value;
+      
+      const search = searchTerm.value.toLowerCase().trim();
+      return publishers.value.filter(pub => 
+        pub.maNXB.toLowerCase().includes(search) ||
+        pub.tenNXB.toLowerCase().includes(search)
+      );
+    });
 
     const fetchData = async () => {
       try {
@@ -218,19 +245,20 @@ export default {
     onMounted(fetchPublishers);
 
     return {
-      publishers,
-      loading,
-      error,
       showAddModal,
       editingPublisher,
       publisherForm,
       errors,
+      loading: computed(() => store.getters['publisher/isLoading']),
+      error: computed(() => store.getters['publisher/error']),
+      publishers: filteredPublishers,
+      searchTerm,
       closeModal,
-      getPublisherBookCount,
       editPublisher,
       handleSubmit,
       deletePublisher,
-      clearError
+      clearError,
+      getPublisherBookCount
     };
   }
 };
