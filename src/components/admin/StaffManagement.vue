@@ -58,7 +58,7 @@
               <button class="btn btn-sm btn-info me-2" @click="editStaff(staff)">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="btn btn-sm btn-danger" @click="deleteStaff(staff._id)">
+              <button class="btn btn-sm btn-danger" @click="confirmDelete(staff)">
                 <i class="fas fa-trash"></i>
               </button>
             </td>
@@ -113,7 +113,26 @@
         </div>
       </div>
     </div>
-    <div class="modal-backdrop fade show" v-if="showAddModal"></div>
+    <div class="modal" tabindex="-1" :class="{ 'd-block': showDeleteModal }">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Xác nhận xóa</h5>
+            <button type="button" class="btn-close" @click="closeDeleteModal"></button>
+          </div>
+          <div class="modal-body">
+            <p>Bạn có chắc chắn muốn xóa nhân viên "{{ selectedStaff?.hoTenNV }}" không?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeDeleteModal">Hủy</button>
+            <button type="button" class="btn btn-danger" @click="handleDelete" :disabled="loading">
+              {{ loading ? 'Đang xử lý...' : 'Xóa' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade show" v-if="showDeleteModal"></div>
   </div>
 </template>
 
@@ -133,6 +152,8 @@ export default {
     const editingStaff = ref(null);
     const loading = ref(false);
     const error = ref(null);
+    const showDeleteModal = ref(false);
+    const selectedStaff = ref(null);
     const searchTerm = ref('');
     const staffForm = ref({
       MSNV: '',
@@ -155,7 +176,26 @@ export default {
         loading.value = false;
       }
     };
+    const confirmDelete = (staff) => {
+      selectedStaff.value = staff;
+      showDeleteModal.value = true;
+    };
 
+    const closeDeleteModal = () => {
+      showDeleteModal.value = false;
+      selectedStaff.value = null;
+    };
+
+    const handleDelete = async () => {
+      try {
+        await api.delete(`/nhanvien/${selectedStaff.value._id}`);
+        await fetchStaff();
+        closeDeleteModal();
+        proxy.$toast.show('Xóa nhân viên thành công', 'success');
+      } catch (error) {
+        showError(error);
+      }
+    };
     const filteredStaff = computed(() => {
       if (!searchTerm.value.trim()) return staffList.value;
       
@@ -209,17 +249,6 @@ export default {
       }
     };
 
-    const deleteStaff = async (id) => {
-      if (confirm('Bạn có chắc muốn xóa nhân viên này?')) {
-        try {
-          await api.delete(`/nhanvien/${id}`);
-          await fetchStaff();
-        } catch (error) {
-          console.error('Error deleting staff:', error);
-        }
-      }
-    };
-
     const clearError = () => {
       error.value = null;
     };
@@ -239,7 +268,11 @@ export default {
       closeModal,
       editStaff,
       handleSubmit,
-      deleteStaff,
+      showDeleteModal,
+      selectedStaff,
+      confirmDelete,
+      closeDeleteModal,
+      handleDelete,
       clearError
     };
   }

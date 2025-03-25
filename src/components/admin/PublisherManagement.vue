@@ -54,7 +54,7 @@
                 <button class="btn btn-sm btn-info me-2" @click="editPublisher(publisher)">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" @click="deletePublisher(publisher._id)">
+                <button class="btn btn-sm btn-danger" @click="confirmDelete(publisher)">
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
@@ -128,6 +128,26 @@
         </div>
       </div>
     </div>
+        <!-- Modal Xác nhận xóa -->
+    <div class="modal" tabindex="-1" :class="{ 'd-block': showDeleteModal }">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Xác nhận xóa</h5>
+            <button type="button" class="btn-close" @click="closeDeleteModal"></button>
+          </div>
+          <div class="modal-body">
+            <p>Bạn có chắc chắn muốn xóa nhà xuất bản "{{ selectedPublisher?.tenNXB }}" không?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeDeleteModal">Hủy</button>
+            <button type="button" class="btn btn-danger" @click="handleDelete" :disabled="loading">
+              {{ loading ? 'Đang xử lý...' : 'Xóa' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="modal-backdrop fade show" v-if="showAddModal"></div>
   </div>
 </template>
@@ -147,6 +167,8 @@ export default {
     const showAddModal = ref(false);
     const editingPublisher = ref(null);
     const searchTerm = ref('');
+    const showDeleteModal = ref(false);
+    const selectedPublisher = ref(null);
     const publisherForm = ref({
       maNXB: '',
       tenNXB: '',
@@ -161,7 +183,26 @@ export default {
     const fetchPublishers = async () => {
       await store.dispatch('publisher/fetchPublishers');
     };
+    const confirmDelete = (publisher) => {
+      selectedPublisher.value = publisher;
+      showDeleteModal.value = true;
+    };
 
+    const closeDeleteModal = () => {
+      showDeleteModal.value = false;
+      selectedPublisher.value = null;
+    };
+
+    const handleDelete = async () => {
+      try {
+        await store.dispatch('publisher/deletePublisher', selectedPublisher.value._id);
+        await fetchPublishers();
+        closeDeleteModal();
+        proxy.$toast.show('Xóa nhà xuất bản thành công', 'success');
+      } catch (error) {
+        showError(error);
+      }
+    };
     const closeModal = () => {
       showAddModal.value = false;
       editingPublisher.value = null;
@@ -227,17 +268,6 @@ export default {
       }
     };
 
-    const deletePublisher = async (id) => {
-      if (confirm('Bạn có chắc muốn xóa nhà xuất bản này?')) {
-        try {
-          await store.dispatch('publisher/deletePublisher', id);
-          await fetchPublishers();
-        } catch (error) {
-          console.error('Error deleting publisher:', error);
-        }
-      }
-    };
-
     const clearError = () => {
       store.commit('publisher/clearError');
     };
@@ -256,9 +286,13 @@ export default {
       closeModal,
       editPublisher,
       handleSubmit,
-      deletePublisher,
       clearError,
-      getPublisherBookCount
+      getPublisherBookCount,
+      showDeleteModal,
+      selectedPublisher,
+      confirmDelete,
+      closeDeleteModal,
+      handleDelete
     };
   }
 };
