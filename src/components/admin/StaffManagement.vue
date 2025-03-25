@@ -16,6 +16,22 @@
       <button type="button" class="btn-close" @click="clearError"></button>
     </div>
 
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="input-group">
+          <input 
+            type="text" 
+            class="form-control" 
+            v-model="searchTerm"
+            placeholder="Tìm kiếm theo MSNV, họ tên, chức vụ..."
+          >
+          <span class="input-group-text">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- Danh sách nhân viên -->
     <div class="table-responsive">
       <table class="table table-striped">
@@ -102,7 +118,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { validateStaffForm } from '@/utils/validation';
 import { showError } from '@/utils/notifications';
@@ -117,6 +133,7 @@ export default {
     const editingStaff = ref(null);
     const loading = ref(false);
     const error = ref(null);
+    const searchTerm = ref('');
     const staffForm = ref({
       MSNV: '',
       hoTenNV: '',
@@ -138,6 +155,19 @@ export default {
         loading.value = false;
       }
     };
+
+    const filteredStaff = computed(() => {
+      if (!searchTerm.value.trim()) return staffList.value;
+      
+      const search = searchTerm.value.toLowerCase().trim();
+      return staffList.value.filter(staff => 
+        staff.MSNV.toLowerCase().includes(search) ||
+        staff.hoTenNV.toLowerCase().includes(search) ||
+        staff.chucVu.toLowerCase().includes(search) ||
+        staff.diaChi.toLowerCase().includes(search) ||
+        staff.soDienThoai.includes(search)
+      );
+    });
 
     const closeModal = () => {
       showAddModal.value = false;
@@ -204,6 +234,8 @@ export default {
       loading,
       error,
       errors,
+      searchTerm,
+      filteredStaff,
       closeModal,
       editStaff,
       handleSubmit,
