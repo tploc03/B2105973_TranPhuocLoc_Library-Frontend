@@ -18,7 +18,7 @@
             <button type="button" class="btn-close" @click="closeConfirmModal"></button>
           </div>
           <div class="modal-body">
-            <p>Bạn có chắc muốn mượn sách này?</p>
+            <p>Bạn muốn mượn '{{ selectedBook?.tenSach }}'?</p>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeConfirmModal">Hủy</button>
@@ -106,13 +106,15 @@ export default {
         book.maNXB?.tenNXB.toLowerCase().includes(search) ||
         book.nguonGoc.toLowerCase().includes(search)
       );
-    });    
+    });
+
     const { proxy } = getCurrentInstance();
     const error = ref(null);
     const loading = ref(false);
     const searchTerm = ref('');
-    const showConfirmModal = ref(false);
+    const selectedBook = ref(null);
     const selectedBookId = ref(null);
+    const showConfirmModal = ref(false);
 
     const fetchBooks = async () => {
       try {
@@ -127,14 +129,16 @@ export default {
       }
     };
 
+    const borrowBook = (bookId) => {
+      selectedBook.value = books.value.find(book => book._id === bookId);
+      selectedBookId.value = bookId;
+      showConfirmModal.value = true;
+    };
+
     const closeConfirmModal = () => {
       showConfirmModal.value = false;
       selectedBookId.value = null;
-    };
-
-    const borrowBook = (bookId) => {
-      selectedBookId.value = bookId;
-      showConfirmModal.value = true;
+      selectedBook.value = null;
     };
 
     const handleConfirmBorrow = async () => {
@@ -167,6 +171,7 @@ export default {
       showConfirmModal,
       closeConfirmModal,
       handleConfirmBorrow,
+      selectedBook,
       clearError
     };
   }
