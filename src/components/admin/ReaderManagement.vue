@@ -52,7 +52,7 @@
             <td>{{ formatDate(reader.ngaySinh) }}</td>
             <td>{{ reader.diaChi }}</td>
             <td>
-              <button class="btn btn-sm btn-danger" @click="confirmDelete(reader._id)">
+              <button class="btn btn-sm btn-danger" @click="confirmDelete(reader)">
                 <i class="fas fa-trash"></i>
               </button>
             </td>
@@ -70,7 +70,7 @@
             <button type="button" class="btn-close" @click="closeConfirmModal"></button>
           </div>
           <div class="modal-body">
-            <p>Bạn có chắc muốn xóa độc giả này không?</p>
+            <p>Bạn có chắc muốn xóa độc giả "{{ selectedReader?.hoLot }} {{ selectedReader?.ten }}" không?</p>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeConfirmModal">Hủy</button>
@@ -99,6 +99,7 @@ export default {
     const loading = ref(false);
     const error = ref(null);
     const searchTerm = ref('');
+    const selectedReader = ref(null);
     const showConfirmModal = ref(false);
     const selectedReaderId = ref(null);
 
@@ -129,21 +130,22 @@ export default {
       return new Date(date).toLocaleDateString('vi-VN');
     };
 
-    const confirmDelete = (id) => {
-      selectedReaderId.value = id;
+    const confirmDelete = (reader) => {
+      selectedReader.value = reader;
       showConfirmModal.value = true;
     };
 
     const closeConfirmModal = () => {
       showConfirmModal.value = false;
-      selectedReaderId.value = null;
+      selectedReader.value = null;
     };
 
     const handleConfirmDelete = async () => {
-      loading.value = true;
       try {
-        await api.delete(`/docgia/${selectedReaderId.value}`);
+        loading.value = true;
+        await api.delete(`/docgia/${selectedReader.value._id}`);
         await fetchReaders();
+        proxy.$toast.show('Xóa độc giả thành công', 'success');
         closeConfirmModal();
       } catch (error) {
         showError(error);
@@ -169,10 +171,12 @@ export default {
       searchTerm,
       showConfirmModal,
       handleSearch,
+      selectedReader,
       confirmDelete,
       closeConfirmModal,
       handleConfirmDelete,
       clearError,
+      
       formatDate
     };
   }
