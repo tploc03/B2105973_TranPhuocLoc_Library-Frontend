@@ -81,7 +81,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">{{ editingBook ? 'Sửa sách' : 'Thêm sách mới' }}</h5>
+            <h5 class="modal-title">{{ editingBook ? 'Sửa thông tin sách' : 'Thêm sách mới' }}</h5>
             <button type="button" class="btn-close" @click="closeModal"></button>
           </div>
           <div class="modal-body">

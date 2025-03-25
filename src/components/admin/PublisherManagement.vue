@@ -69,7 +69,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
-              {{ editingPublisher ? 'Sửa nhà xuất bản' : 'Thêm nhà xuất bản mới' }}
+              {{ editingPublisher ? 'Sửa thông tin nhà xuất bản' : 'Thêm nhà xuất bản mới' }}
             </h5>
             <button type="button" class="btn-close" @click="closeModal"></button>
           </div>
