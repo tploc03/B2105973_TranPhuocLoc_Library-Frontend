@@ -58,9 +58,11 @@
             <th>Độc giả</th>
             <th>Sách</th>
             <th>Ngày mượn</th>
-            <th>Ngày trả</th>
+            <!-- Chỉ hiện cột Ngày trả ở tab Đã trả hoặc All -->
+            <th v-if="currentTab === 'returned' || currentTab === 'all'">Ngày trả</th>
             <th>Trạng thái</th>
-            <th>Thao tác</th>
+            <!-- Ẩn cột Thao tác ở tab Đã từ chối và Đã trả -->
+            <th v-if="currentTab !== 'rejected' && currentTab !== 'returned'">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -80,13 +82,17 @@
               </small>
             </td>
             <td>{{ formatDate(request.ngayMuon) }}</td>
-            <td>{{ request.ngayTra ? formatDate(request.ngayTra) : '-' }}</td>
+            <!-- Chỉ hiện cột Ngày trả ở tab Đã trả hoặc All -->
+            <td v-if="currentTab === 'returned' || currentTab === 'all'">
+              {{ request.ngayTra ? formatDate(request.ngayTra) : '-' }}
+            </td>
             <td>
               <span :class="getStatusBadgeClass(request.trangThai)">
                 {{ request.trangThai }}
               </span>
             </td>
-            <td>
+            <!-- Ẩn cột Thao tác ở tab Đã từ chối và Đã trả -->
+            <td v-if="currentTab !== 'rejected' && currentTab !== 'returned'">
               <template v-if="request.trangThai === 'Chờ duyệt'">
                 <button class="btn btn-sm btn-success me-2" 
                         @click="showConfirmAction('approve', request)"
