@@ -10,6 +10,22 @@
       <button type="button" class="btn-close" @click="clearError"></button>
     </div>
 
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="input-group">
+          <input 
+            type="text" 
+            class="form-control" 
+            v-model="searchTerm"
+            placeholder="Tìm kiếm theo tên sách, mã sách"
+          >
+          <span class="input-group-text">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- Tabs for different request status -->
     <ul class="nav nav-tabs mb-3">
       <li class="nav-item">
@@ -55,22 +71,25 @@
             <th>Trạng thái</th>
           </tr>
         </thead>
-  <tbody>
-    <tr v-for="request in filteredHistory" :key="request._id">
-      <td>
-        {{ request.maSach?.tenSach || 'N/A' }}
-        <br>
-        <small class="text-muted">{{ request.maSach?.maSach || 'N/A' }}</small>
-      </td>
-      <td>{{ formatDate(request.ngayMuon) }}</td>
-      <td>{{ request.ngayTra ? formatDate(request.ngayTra) : '-' }}</td>
-      <td>
-        <span :class="getStatusBadgeClass(request.trangThai)">
-          {{ request.trangThai }}
-        </span>
-      </td>
-    </tr>
-  </tbody>
+    <tbody>
+      <tr v-for="request in filteredRequests" :key="request._id">
+        <td>
+          {{ request.maSach?.tenSach || 'N/A' }}
+          <br>
+          <small class="text-muted">Mã sách: {{ request.maSach?.maSach || 'N/A' }}</small>
+        </td>
+        <td>{{ formatDate(request.ngayMuon) }}</td>
+        <td>{{ request.ngayTra ? formatDate(request.ngayTra) : '-' }}</td>
+        <td>
+          <span :class="getStatusBadgeClass(request.trangThai)">
+            {{ request.trangThai }}
+          </span>
+        </td>
+      </tr>
+      <tr v-if="filteredRequests.length === 0">
+        <td colspan="4" class="text-center">Không có dữ liệu</td>
+      </tr>
+    </tbody>
       </table>
     </div>
   </div>
@@ -90,24 +109,36 @@ export default {
     const currentTab = ref('all');
     const loading = ref(false);
     const error = ref(null);
+    const searchTerm = ref('');
 
     const borrowHistory = computed(() => store.getters['borrow/borrowHistory']);
     
-    const filteredHistory = computed(() => {
-      if (currentTab.value === 'all') {
-        return borrowHistory.value;
+    const filteredRequests = computed(() => {
+      let results = borrowHistory.value;
+
+      // Lọc theo tab
+      if (currentTab.value !== 'all') {
+        const statusMap = {
+          pending: 'Chờ duyệt',
+          approved: 'Đã duyệt',
+          rejected: 'Từ chối',
+          returned: 'Đã trả'
+        };
+        results = results.filter(
+          request => request.trangThai === statusMap[currentTab.value]
+        );
       }
-      
-      const statusMap = {
-        pending: 'Chờ duyệt',
-        approved: 'Đã duyệt',
-        rejected: 'Từ chối',
-        returned: 'Đã trả'
-      };
-      
-      return borrowHistory.value.filter(
-        request => request.trangThai === statusMap[currentTab.value]
-      );
+
+      // Lọc theo từ khóa tìm kiếm
+      if (searchTerm.value.trim()) {
+        const search = searchTerm.value.toLowerCase().trim();
+        results = results.filter(request => 
+          request.maSach?.tenSach?.toLowerCase().includes(search) ||
+          request.maSach?.maSach?.toLowerCase().includes(search)
+        );
+      }
+
+      return results;
     });
 
     const formatDate = (date) => {
@@ -145,11 +176,12 @@ export default {
 
     return {
       currentTab,
-      filteredHistory,
-      formatDate,
-      getStatusBadgeClass,
+      filteredRequests,
       loading,
       error,
+      searchTerm,
+      formatDate,
+      getStatusBadgeClass,
       clearError
     };
   }
@@ -162,5 +194,21 @@ export default {
 }
 .badge {
   font-size: 0.9em;
+}
+.input-group {
+  max-width: 400px;
+}
+
+.input-group-text {
+  background-color: white;
+  border-left: none;
+}
+
+.form-control:focus + .input-group-text {
+  border-color: #86b7fe;
+}
+
+.form-control {
+  border-right: none;
 }
 </style>
