@@ -61,37 +61,41 @@
     </ul>
 
     <!-- Danh sách yêu cầu mượn sách -->
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Sách</th>
-            <th>Ngày mượn</th>
-            <th>Ngày trả</th>
-            <th>Trạng thái</th>
-          </tr>
-        </thead>
-    <tbody>
-      <tr v-for="request in filteredRequests" :key="request._id">
-        <td>
-          {{ request.maSach?.tenSach || 'N/A' }}
-          <br>
-          <small class="text-muted">Mã sách: {{ request.maSach?.maSach || 'N/A' }}</small>
-        </td>
-        <td>{{ formatDate(request.ngayMuon) }}</td>
-        <td>{{ request.ngayTra ? formatDate(request.ngayTra) : '-' }}</td>
-        <td>
-          <span :class="getStatusBadgeClass(request.trangThai)">
-            {{ request.trangThai }}
-          </span>
-        </td>
-      </tr>
-      <tr v-if="filteredRequests.length === 0">
-        <td colspan="4" class="text-center">Không có dữ liệu</td>
-      </tr>
-    </tbody>
-      </table>
-    </div>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Sách</th>
+          <th>Ngày mượn</th>
+          <!-- Chỉ hiện cột Ngày trả khi ở tab Đã trả hoặc Tất cả -->
+          <th v-if="currentTab === 'all' || currentTab === 'returned'">Ngày trả</th>
+          <th>Trạng thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="request in filteredRequests" :key="request._id">
+          <td>
+            {{ request.maSach?.tenSach || 'N/A' }}
+            <br>
+            <small class="text-muted">Mã sách: {{ request.maSach?.maSach || 'N/A' }}</small>
+          </td>
+          <td>{{ formatDate(request.ngayMuon) }}</td>
+          <!-- Chỉ hiện cột Ngày trả khi ở tab Đã trả hoặc Tất cả -->
+          <td v-if="currentTab === 'all' || currentTab === 'returned'">
+            {{ request.ngayTra ? formatDate(request.ngayTra) : '-' }}
+          </td>
+          <td>
+            <span :class="getStatusBadgeClass(request.trangThai)">
+              {{ request.trangThai }}
+            </span>
+          </td>
+        </tr>
+        <tr v-if="filteredRequests.length === 0">
+          <td :colspan="getColspan">Không có dữ liệu</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
   </div>
 </template>
 
@@ -172,6 +176,10 @@ export default {
       store.commit('borrow/SET_ERROR', null);
     };
 
+    const getColspan = computed(() => {
+      return currentTab.value === 'all' || currentTab.value === 'returned' ? 4 : 3;
+    });
+
     onMounted(fetchHistory);
 
     return {
@@ -182,7 +190,8 @@ export default {
       searchTerm,
       formatDate,
       getStatusBadgeClass,
-      clearError
+      clearError,
+      getColspan
     };
   }
 };
