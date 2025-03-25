@@ -20,7 +20,7 @@
             type="text" 
             class="form-control" 
             v-model="searchTerm"
-            placeholder="Tìm kiếm độc giả..."
+            placeholder="Tìm kiếm độc giả theo mã độc giả, họ và tên, email, số điện thoại"
           >
           <button class="btn btn-outline-secondary" type="button" @click="handleSearch">
             <i class="fas fa-search"></i>
@@ -108,7 +108,8 @@ export default {
       return readers.value.filter(reader => 
         reader.maDocGia.toLowerCase().includes(search) ||
         `${reader.hoLot} ${reader.ten}`.toLowerCase().includes(search) ||
-        reader.email.toLowerCase().includes(search)
+        reader.email.toLowerCase().includes(search) ||
+        reader.dienThoai.toLowerCase().includes(search)
       );
     });
 
