@@ -39,11 +39,11 @@
             type="text" 
             class="form-control" 
             v-model="searchTerm"
-            placeholder="Tìm kiếm sách..."
+            placeholder="Tìm kiếm theo tên sách, mã sách, tên NXB, tên tác giả"
           >
-          <button class="btn btn-outline-secondary" type="button" @click="searchBooks">
+          <span class="input-group-text">
             <i class="fas fa-search"></i>
-          </button>
+          </span>
         </div>
       </div>
     </div>
@@ -96,7 +96,17 @@ export default {
   components: { LoadingSpinner },
   setup() {
     const store = useStore();
-    const books = ref([]);
+    const books = computed(() => {
+      if (!searchTerm.value.trim()) return store.getters['book/allBooks'];
+      
+      const search = searchTerm.value.toLowerCase().trim();
+      return store.getters['book/allBooks'].filter(book => 
+        book.tenSach.toLowerCase().includes(search) ||
+        book.maSach.toLowerCase().includes(search) ||
+        book.maNXB?.tenNXB.toLowerCase().includes(search) ||
+        book.nguonGoc.toLowerCase().includes(search)
+      );
+    });    
     const { proxy } = getCurrentInstance();
     const error = ref(null);
     const loading = ref(false);
@@ -141,20 +151,6 @@ export default {
       }
     };
 
-    const searchBooks = () => {
-      if (!searchTerm.value) {
-        fetchBooks();
-        return;
-      }
-      
-      books.value = store.getters['book/allBooks'].filter(book => 
-        book.tenSach.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-        book.maSach.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-        book.maNXB?.tenNXB.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-        book.nguonGoc.toLowerCase().includes(searchTerm.value.toLowerCase())
-      );
-    };
-
     const clearError = () => {
       error.value = null;
       store.commit('book/SET_ERROR', null);
@@ -168,7 +164,6 @@ export default {
       error,
       searchTerm,
       borrowBook,
-      searchBooks,
       showConfirmModal,
       closeConfirmModal,
       handleConfirmBorrow,
@@ -186,5 +181,21 @@ export default {
   background-color: transparent;
   border-top: none;
   padding-top: 0;
+}
+.input-group {
+  max-width: 500px;
+}
+
+.input-group-text {
+  background-color: white;
+  border-left: none;
+}
+
+.form-control:focus + .input-group-text {
+  border-color: #86b7fe;
+}
+
+.form-control {
+  border-right: none;
 }
 </style>
