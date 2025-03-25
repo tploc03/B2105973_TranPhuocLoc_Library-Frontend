@@ -5,6 +5,23 @@
       <h2>Quản lý mượn sách</h2>
     </div>
 
+    <!-- Phần tìm kiếm -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="input-group">
+          <input 
+            type="text" 
+            class="form-control" 
+            v-model="searchTerm"
+            placeholder="Tìm kiếm theo tên độc giả, mã độc giả, tên sách, mã sách"
+          >
+          <span class="input-group-text">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- Tabs for different request status -->
     <ul class="nav nav-tabs mb-3">
       <li class="nav-item">
@@ -110,17 +127,34 @@ export default {
     const loading = ref(false);
     const { proxy } = getCurrentInstance();
     const borrowRequests = computed(() => store.getters['borrow/allBorrowRequests']);
-    
+    const searchTerm = ref('');
+
     const filteredRequests = computed(() => {
-      const statusMap = {
-        pending: 'Chờ duyệt',
-        approved: 'Đã duyệt',
-        rejected: 'Từ chối',
-        returned: 'Đã trả'
-      };
-      return borrowRequests.value.filter(
-        request => request.trangThai === statusMap[currentTab.value]
-      );
+      let requests = borrowRequests.value;
+
+      if (currentTab.value !== 'all') {
+        const statusMap = {
+          pending: 'Chờ duyệt',
+          approved: 'Đã duyệt',
+          rejected: 'Từ chối',
+          returned: 'Đã trả'
+        };
+        requests = requests.filter(
+          request => request.trangThai === statusMap[currentTab.value]
+        );
+      }
+
+      if (searchTerm.value.trim()) {
+        const search = searchTerm.value.toLowerCase().trim();
+        requests = requests.filter(request => 
+          `${request.maDocGia?.hoLot} ${request.maDocGia?.ten}`.toLowerCase().includes(search) ||
+          request.maDocGia?.maDocGia.toLowerCase().includes(search) ||
+          request.maSach?.tenSach.toLowerCase().includes(search) ||
+          request.maSach?.maSach.toLowerCase().includes(search)
+        );
+      }
+
+      return requests;
     });
     
     const formatDate = (date) => {
@@ -189,11 +223,12 @@ export default {
 
     return {
       currentTab,
-      filteredRequests,
       loading,
+      searchTerm,
+      filteredRequests,
       formatDate,
-      getQuantityClass,
       getStatusBadgeClass,
+      getQuantityClass,
       showConfirmAction,
       updateStatus
     };
@@ -216,5 +251,21 @@ export default {
 }
 .text-success {
   color: #198754 !important;
+}
+.input-group {
+  max-width: 500px;
+}
+
+.input-group-text {
+  background-color: white;
+  border-left: none;
+}
+
+.form-control:focus + .input-group-text {
+  border-color: #86b7fe;
+}
+
+.form-control {
+  border-right: none;
 }
 </style>

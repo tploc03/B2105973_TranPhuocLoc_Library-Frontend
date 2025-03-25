@@ -24,7 +24,7 @@
             type="text" 
             class="form-control" 
             v-model="searchTerm"
-            placeholder="Tìm kiếm sách (theo tên sách, mã sách, tên nhà xuất bản)..."
+            placeholder="Tìm kiếm sách theo tên sách, mã sách, tên nhà xuất bản"
           >
           <button class="btn btn-outline-secondary" type="button" @click="searchBooks">
             <i class="fas fa-search"></i>

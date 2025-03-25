@@ -23,7 +23,7 @@
             type="text" 
             class="form-control" 
             v-model="searchTerm"
-            placeholder="Tìm kiếm theo MSNV, họ tên, chức vụ..."
+            placeholder="Tìm kiếm theo MSNV, họ tên, chức vụ, địa chỉ, số điện thoại"
           >
           <span class="input-group-text">
             <i class="fas fa-search"></i>
@@ -249,5 +249,21 @@ export default {
 <style scoped>
 .modal {
   background-color: rgba(0, 0, 0, 0.5);
+}
+.input-group {
+  max-width: 500px;
+}
+
+.input-group-text {
+  background-color: white;
+  border-left: none;
+}
+
+.form-control:focus + .input-group-text {
+  border-color: #86b7fe;
+}
+
+.form-control {
+  border-right: none;
 }
 </style>
