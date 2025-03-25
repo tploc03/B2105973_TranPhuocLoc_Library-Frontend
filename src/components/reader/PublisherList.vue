@@ -18,7 +18,7 @@
             type="text" 
             class="form-control" 
             v-model="searchTerm"
-            placeholder="Tìm kiếm nhà xuất bản..."
+            placeholder="Tìm kiếm nhà xuất bản theo tên hoặc mã nhà xuất bản"
           >
           <button class="btn btn-outline-secondary" type="button" @click="handleSearch">
             <i class="fas fa-search"></i>
