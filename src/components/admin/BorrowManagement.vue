@@ -115,14 +115,39 @@
         </tbody>
       </table>
     </div>
+    <div class="modal" tabindex="-1" :class="{ 'd-block': showConfirmModal }">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Xác nhận {{ getActionTitle }}</h5>
+            <button type="button" class="btn-close" @click="closeConfirmModal"></button>
+          </div>
+          <div class="modal-body">
+            <p>{{ confirmMessage }}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeConfirmModal">Hủy</button>
+            <button 
+              type="button" 
+              :class="getActionButtonClass" 
+              @click="handleConfirmAction" 
+              :disabled="loading"
+            >
+              {{ loading ? 'Đang xử lý...' : getActionButtonText }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade show" v-if="showConfirmModal"></div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, getCurrentInstance} from 'vue';
+import { ref, computed, onMounted, getCurrentInstance } from 'vue';
 import { useStore } from 'vuex';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { showError, showConfirm } from '@/utils/notifications';
+import { showError } from '@/utils/notifications';
 
 export default {
   name: 'BorrowManagement',
@@ -132,8 +157,12 @@ export default {
     const currentTab = ref('pending');
     const loading = ref(false);
     const { proxy } = getCurrentInstance();
-    const borrowRequests = computed(() => store.getters['borrow/allBorrowRequests']);
+    const showConfirmModal = ref(false);
+    const selectedRequest = ref(null);
+    const selectedAction = ref('');
     const searchTerm = ref('');
+
+    const borrowRequests = computed(() => store.getters['borrow/allBorrowRequests']);
 
     const filteredRequests = computed(() => {
       let requests = borrowRequests.value;
@@ -162,7 +191,44 @@ export default {
 
       return requests;
     });
-    
+
+    const getActionTitle = computed(() => {
+      const titles = {
+        approve: 'duyệt yêu cầu',
+        reject: 'từ chối yêu cầu',
+        return: 'xác nhận trả sách'
+      };
+      return titles[selectedAction.value] || '';
+    });
+
+    const confirmMessage = computed(() => {
+      if (!selectedRequest.value) return '';
+      const messages = {
+        approve: `Bạn có chắc muốn duyệt yêu cầu mượn sách "${selectedRequest.value.maSach?.tenSach}" của độc giả "${selectedRequest.value.maDocGia?.hoLot} ${selectedRequest.value.maDocGia?.ten}" không?`,
+        reject: `Bạn có chắc muốn từ chối yêu cầu mượn sách "${selectedRequest.value.maSach?.tenSach}" của độc giả "${selectedRequest.value.maDocGia?.hoLot} ${selectedRequest.value.maDocGia?.ten}" không?`,
+        return: `Bạn có chắc muốn xác nhận độc giả "${selectedRequest.value.maDocGia?.hoLot} ${selectedRequest.value.maDocGia?.ten}" đã trả sách "${selectedRequest.value.maSach?.tenSach}" không?`
+      };
+      return messages[selectedAction.value] || '';
+    });
+
+    const getActionButtonClass = computed(() => {
+      const classes = {
+        approve: 'btn btn-success',
+        reject: 'btn btn-danger',
+        return: 'btn btn-info'
+      };
+      return classes[selectedAction.value] || 'btn btn-primary';
+    });
+
+    const getActionButtonText = computed(() => {
+      const texts = {
+        approve: 'Duyệt',
+        reject: 'Từ chối',
+        return: 'Xác nhận'
+      };
+      return texts[selectedAction.value] || '';
+    });
+
     const formatDate = (date) => {
       return new Date(date).toLocaleDateString('vi-VN');
     };
@@ -194,22 +260,27 @@ export default {
       return 'text-success';
     };
 
-    const showConfirmAction = async (action, request) => {
-      const messages = {
-        approve: 'Bạn có chắc chắn muốn duyệt yêu cầu mượn sách này?',
-        reject: 'Bạn có chắc chắn muốn từ chối yêu cầu mượn sách này?',
-        return: 'Bạn có chắc chắn muốn đánh dấu sách này đã được trả?'
-      };
+    const showConfirmAction = (action, request) => {
+      selectedAction.value = action;
+      selectedRequest.value = request;
+      showConfirmModal.value = true;
+    };
 
+    const closeConfirmModal = () => {
+      showConfirmModal.value = false;
+      selectedRequest.value = null;
+      selectedAction.value = '';
+    };
+
+    const handleConfirmAction = async () => {
       const statusMap = {
         approve: 'Đã duyệt',
         reject: 'Từ chối',
         return: 'Đã trả'
       };
 
-      if (await showConfirm(messages[action])) {
-        await updateStatus(request._id, statusMap[action]);
-      }
+      await updateStatus(selectedRequest.value._id, statusMap[selectedAction.value]);
+      closeConfirmModal();
     };
 
     const updateStatus = async (id, status) => {
@@ -232,10 +303,19 @@ export default {
       loading,
       searchTerm,
       filteredRequests,
+      showConfirmModal,
+      selectedRequest,
+      selectedAction,
+      getActionTitle,
+      confirmMessage,
+      getActionButtonClass,
+      getActionButtonText,
       formatDate,
       getStatusBadgeClass,
       getQuantityClass,
       showConfirmAction,
+      closeConfirmModal,
+      handleConfirmAction,
       updateStatus
     };
   }
