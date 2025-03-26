@@ -28,38 +28,38 @@
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Họ lót</label>
+            <label class="form-label">Họ <span class="text-danger">*</span> </label>
             <input type="text" class="form-control" v-model="formData.hoLot" required>
           </div>
           <div class="mb-3">
-            <label class="form-label">Tên</label>
+            <label class="form-label">Tên <span class="text-danger">*</span> </label>
             <input type="text" class="form-control" v-model="formData.ten" required>
           </div>
           <div class="mb-3">
-            <label class="form-label">Ngày sinh</label>
+            <label class="form-label">Ngày sinh <span class="text-danger">*</span> </label>
             <input type="date" class="form-control" v-model="formData.ngaySinh" required>
           </div>
           <div class="mb-3">
-            <label class="form-label">Phái</label>
+            <label class="form-label">Giới tính <span class="text-danger">*</span> </label>
             <select class="form-select" v-model="formData.phai" required>
               <option value="Nam">Nam</option>
               <option value="Nữ">Nữ</option>
             </select>
           </div>
           <div class="mb-3">
-            <label class="form-label">Địa chỉ</label>
+            <label class="form-label">Địa chỉ <span class="text-danger">*</span> </label>
             <input type="text" class="form-control" v-model="formData.diaChi" required>
           </div>
           <div class="mb-3">
-            <label class="form-label">Điện thoại</label>
+            <label class="form-label">Số điện thoại <span class="text-danger">*</span> </label>
             <input type="tel" class="form-control" v-model="formData.dienThoai" required>
           </div>
           <div class="mb-3">
-            <label class="form-label">Email</label>
+            <label class="form-label">Email <span class="text-danger">*</span> </label>
             <input type="email" class="form-control" v-model="formData.email" required>
           </div>
           <div class="mb-3">
-            <label class="form-label">Mật khẩu</label>
+            <label class="form-label">Mật khẩu <span class="text-danger">*</span> </label>
             <input type="password" class="form-control" v-model="formData.password" required>
           </div>
           <button type="submit" class="btn btn-primary w-100" :disabled="loading">
