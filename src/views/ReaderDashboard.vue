@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue'; // Thêm watch vào đây
+import { ref, computed, onMounted, watch } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import HomePage from '@/components/reader/HomePage.vue';
@@ -70,10 +70,8 @@ export default {
     const store = useStore();
     const router = useRouter();
     
-    // Lấy component từ localStorage hoặc mặc định là 'HomePage'
     const currentComponent = ref(localStorage.getItem('readerCurrentComponent') || 'HomePage');
     
-    // Watch sự thay đổi của currentComponent và lưu vào localStorage
     watch(currentComponent, (newValue) => {
       localStorage.setItem('readerCurrentComponent', newValue);
     });
@@ -82,7 +80,7 @@ export default {
 
     const handleLogout = async () => {
       await store.dispatch('auth/logout');
-      localStorage.removeItem('readerCurrentComponent'); // Xóa khi logout
+      localStorage.removeItem('readerCurrentComponent');
       router.push('/login');
     };
 

@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue'; // Thêm watch vào đây
+import { ref, computed, onMounted, watch } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import BookManagement from '@/components/admin/BookManagement.vue';

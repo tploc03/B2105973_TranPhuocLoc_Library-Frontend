@@ -163,7 +163,7 @@ export default {
       soDienThoai: '',
       password: ''
     }); 
-    const errors = ref({}); // Thêm errors state
+    const errors = ref({});
 
     const fetchStaff = async () => {
       loading.value = true;

@@ -67,7 +67,6 @@
         <tr>
           <th>Sách</th>
           <th>Ngày mượn</th>
-          <!-- Chỉ hiện cột Ngày trả khi ở tab Đã trả hoặc Tất cả -->
           <th v-if="currentTab === 'all' || currentTab === 'returned'">Ngày trả</th>
           <th>Trạng thái</th>
         </tr>
@@ -120,7 +119,6 @@ export default {
     const filteredRequests = computed(() => {
       let results = borrowHistory.value;
 
-      // Lọc theo tab
       if (currentTab.value !== 'all') {
         const statusMap = {
           pending: 'Chờ duyệt',
@@ -133,7 +131,6 @@ export default {
         );
       }
 
-      // Lọc theo từ khóa tìm kiếm
       if (searchTerm.value.trim()) {
         const search = searchTerm.value.toLowerCase().trim();
         results = results.filter(request => 
